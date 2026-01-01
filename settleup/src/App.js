@@ -15,11 +15,6 @@ import JoinGroup from "./pages/groups/JoinGroup.js";
 import Profile from "./pages/Profile";
 
 
-
-function AddExpense() { return <h2 style={{ padding: "2rem" }}>Add Expense</h2>; }
-function Activity() { return <h2 style={{ padding: "2rem" }}>Activity</h2>; }
-function About() { return <h2 style={{ padding: "2rem" }}>About</h2>; }
-
 function App() {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
