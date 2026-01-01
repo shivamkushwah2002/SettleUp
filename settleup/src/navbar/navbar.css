@@ -5,6 +5,9 @@
   box-sizing: border-box;
 }
 
+/* Prevent accidental horizontal scrolling globally */
+html, body { max-width: 100%; overflow-x: hidden; }
+
 /* Navbar Base */
 .navbar {
   background-color: #1e1e2f;
@@ -64,6 +67,11 @@
   gap: 5px;
 }
 
+/* Hide mobile sidebar toggle on desktop by default; shown in media query */
+.mobile-sidebar-toggle {
+  display: none;
+}
+
 .bar {
   width: 25px;
   height: 3px;
@@ -108,4 +116,187 @@
 }
 .rotate2 {
   transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Sidebar for authenticated layout */
+.app-with-sidebar {
+  display: flex;
+  min-height: calc(100vh - 0px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #0f1222 0%, #141622 100%);
+  color: #e6eef8;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 900;
+  box-shadow: 2px 0 14px rgba(7,12,20,0.45);
+}
+
+.sidebar-inner {
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sidebar-logo {
+  font-size: 1.5rem;
+  color: #64e0a3;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.6px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #cfe6f6;
+  text-decoration: none;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 180ms ease;
+}
+
+.sidebar-icon {
+  font-size: 1.05rem;
+  opacity: 0.95;
+}
+
+.sidebar-text { 
+  line-height: 1;
+}
+
+.sidebar-item:hover {
+  transform: translateX(4px);
+  color: #fff;
+  background: rgba(100,224,163,0.06);
+}
+
+.sidebar-item.active {
+  background: linear-gradient(90deg, rgba(100,224,163,0.06), rgba(74,211,149,0.02));
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 0 #64e0a3;
+  border-left: 4px solid #64e0a3;
+  transform: translateX(6px);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+  background: #f6f8fb;
+}
+
+@media (max-width: 900px) {
+  .main-content { padding: 1rem; }
+}
+
+/* Mobile sidebar behavior */
+/* default hidden on small screens; `.open` override shows it */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    /* responsive width: use most of viewport on small phones but cap to a reasonable size */
+    width: 80vw;
+    max-width: 340px;
+    transform: translateX(-100%);
+    transition: transform 220ms ease, opacity 220ms ease;
+    display: block;
+    z-index: 1200;
+  }
+
+  .sidebar.open { transform: translateX(0); }
+  .sidebar.closed { transform: translateX(-100%); }
+
+  .sidebar-close {
+    background: transparent;
+    border: none;
+    color: #cfe6f6;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .sidebar-top { display:flex; justify-content:space-between; align-items:center }
+
+  .mobile-sidebar-toggle {
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    z-index: 1250;
+    background: #64e0a3;
+    color: #04202a;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(10,20,15,0.12);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  /* Hide the mobile toggle while the sidebar is open to avoid overlapping UI */
+  .sidebar.open + .mobile-sidebar-toggle { display: none; }
+
+  .mobile-sidebar-toggle:active { transform: translateY(1px); }
+
+  /* Dim overlay when sidebar open */
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3,8,12,0.45);
+    z-index: 1100;
+  }
+}
+
+/* Global responsive utilities for pages */
+@media (max-width: 900px) {
+  /* Ensure cards and panels use full width */
+  .card, .panel, .profile-card, .modal-card { width: 100%; max-width: 100%; box-sizing: border-box; }
+
+  /* Reduce main content padding on smaller screens */
+  .main-content { padding: 12px; }
+
+  /* Modals scale down nicely */
+  .modal-card { width: 92%; max-width: 720px; }
+
+  /* Make buttons and inputs full width where helpful */
+  .profile-actions .btn, .modal-actions .btn, .auth-input, .input { width: 100%; }
+
+  /* Stack header actions where needed */
+  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .sidebar { width: 220px; }
+  .profile-grid { grid-template-columns: 1fr; gap: 16px; }
+  .avatar-preview { width: 140px; height: 140px; }
 }

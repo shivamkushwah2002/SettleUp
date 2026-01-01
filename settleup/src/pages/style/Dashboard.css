@@ -1,58 +1,190 @@
 .dashboard-container {
-  background: #f1f1f1;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: #f6f8fb;
 }
 
-.dashboard-card {
-  background: white;
-  width: 380px;
-  padding: 2rem;
-  border-radius: 14px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+:root {
+  --dash-bg: #f6f8fb; /* set to project light background */
+  --dash-accent: #14c3a7; /* keep project accent */
+  --dash-card-radius: 14px;
 }
 
-.dashboard-card h1 {
-  margin-bottom: 1.5rem;
-}
+.dashboard-page { padding: 26px 22px; max-width: 1400px; margin: 0 auto; box-sizing: border-box; }
+.dashboard-header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px }
+.dashboard-title{ margin:0; font-size:28px }
+.dashboard-actions{ display:flex; gap:12px }
 
-.loading {
-  font-size: 22px;
-  padding: 2rem;
-}
+.loading { font-size: 20px; padding: 2rem }
+.error { color: red; font-size: 18px; padding: 2rem }
 
-.error {
-  color: red;
-  font-size: 20px;
-  padding: 2rem;
-}
-
-/* Dashboard layout */
-.dashboard-page { padding: 24px 0 }
-.dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; max-width: 1100px; margin: 0 auto }
-@media (max-width: 880px){ .dashboard-grid{ grid-template-columns: 1fr } }
-
-.welcome-card h2 { margin: 0 0 6px 0 }
-.stat-row{ display:flex; gap:24px; margin-top:12px }
-.stat-title{ color:var(--muted); font-size:13px }
-.stat-value{ font-size:20px; font-weight:700 }
-
-.group-list-item{ display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; background:#fff; border:1px solid var(--border) }
-.activity-item{ display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; background:#fff; border:1px solid var(--border) }
-
-.card{ background:var(--card-bg); padding:14px; border-radius:10px; border:1px solid var(--border); box-shadow:0 1px 2px rgba(0,0,0,0.03) }
-
-/* Stats and group card polish */
-.stats-row { margin-bottom: 18px }
-.stats-row .stat-card{ padding:18px; border-radius:12px }
+.stats-panel { padding: 18px; border-radius: var(--dash-card-radius); margin-bottom: 22px }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 0 }
+.stats-row .stat-card{ padding:24px; border-radius:var(--dash-card-radius); min-height:120px }
 .stat-label{ color:var(--muted); font-size:13px }
-.stat-main{ margin-top:8px }
+.stat-main{ margin-top:12px }
+.stat-emph{ font-size:28px; font-weight:800 }
 
-.groups-grid { margin-top: 12px }
-.group-card{ padding:18px; border-radius:12px }
+.card{ background:var(--card-bg); padding:18px; border-radius:var(--dash-card-radius); border:1px solid var(--border); box-shadow:0 12px 40px rgba(10,20,40,0.08) }
+
+.groups-grid { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px }
+.group-card{ padding:20px; border-radius:14px }
 .group-card h4{ margin:0 }
 
 @media (max-width: 960px){ .groups-grid{ grid-template-columns: repeat(2, 1fr) } }
 @media (max-width: 640px){ .groups-grid{ grid-template-columns: 1fr } .stats-row{ grid-template-columns: 1fr } }
+
+/* Mobile friendliness: ensure dashboard fits viewport and avoids horizontal overflow */
+@media (max-width: 900px) {
+  .dashboard-page { padding: 14px 12px; max-width: 100%; margin: 0; }
+  .dashboard-title { font-size: 22px; }
+  .card { padding: 12px; }
+  .stats-panel { padding: 12px; }
+  .dashboard-body { gap: 18px; }
+  .main-content { padding: 10px; }
+  /* ensure no horizontal scroll */
+  html, body, .app-with-sidebar, .main-content, .dashboard-page { overflow-x: hidden; }
+}
+
+/* Additional mobile fixes to prevent any internal element from overflowing */
+@media (max-width: 900px) {
+  .dashboard-page .card, .dashboard-page .panel, .groups-panel, .panel.card { box-sizing: border-box; overflow: hidden; }
+  .dashboard-page .groups-column { padding-right: 6px; padding-left: 6px; }
+  .dashboard-page .groups-column .groups-list .group-list-item { padding-right: 8px; }
+  .groups-list .group-right { flex: 0 0 90px; min-width: 70px; }
+  .groups-list .group-title { font-size: 16px; }
+  .activity-list .activity-item { padding-right: 8px; }
+  .activity-text { max-width: calc(100% - 120px); }
+}
+
+/* Force main content area to never exceed viewport on very narrow devices */
+@media (max-width: 420px) {
+  .groups-list .group-right { flex: 0 0 80px; }
+  .activity-text { max-width: calc(100% - 100px); }
+  .card { padding: 10px; }
+}
+
+/* New two-column layout for dashboard body */
+.dashboard-body { display: grid; grid-template-columns: 2fr 1fr; gap: 28px; align-items: start }
+/* .groups-column { }
+.activity-column { } */
+
+.section-title { margin: 8px 0 12px 0; font-size:20px }
+
+/* Page-wide background to match screenshot (applies to whole app when viewing dashboard) */
+html, body { background: var(--dash-bg); }
+
+/* Make the card containers visually float on the yellow background */
+.stats-panel, .panel.card { background: var(--card-bg); }
+
+/* Tab-like strip under stats (visual only) */
+.dashboard-tabs { display:flex; gap:12px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 12px; margin: 18px 0 }
+.dashboard-tabs .tab { flex:1; text-align:center; padding:10px 12px; border-radius:10px; color: #374151 }
+.dashboard-tabs .tab.active { background: var(--card-bg); box-shadow: inset 0 0 0 2px rgba(20,195,167,0.08); font-weight:700 }
+
+.groups-list { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 }
+.groups-panel { padding: 6px 0 }
+
+
+.activity-panel { padding: 6px 0 }
+.activity-list { display:flex; flex-direction: column; gap: 14px; padding: 12px 8px }
+.activity-item { display:flex; justify-content:space-between; gap: 12px; align-items:center; padding:14px; border-radius:12px }
+
+/* subtle shadows and hover lifts */
+.card { transition: transform 160ms ease, box-shadow 160ms ease }
+.card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(10,20,40,0.12) }
+.panel.card { box-shadow: 0 10px 36px rgba(10,20,40,0.08) }
+.group-list-item.card:hover, .activity-item.card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(10,20,40,0.06) }
+.activity-left { display:flex; gap:10px; align-items:center }
+.activity-avatar { width:40px; height:40px; border-radius:50%; background:var(--dash-accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:700 }
+.activity-text { max-width: 420px }
+.activity-item { overflow: hidden; }
+.activity-left { min-width: 0; }
+.activity-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis }
+.activity-group { color: var(--muted); font-size:13px }
+.activity-amount { font-weight:800 }
+.activity-amount.positive { color: #059669 }
+.activity-amount.negative { color: #ef4444 }
+
+/* Ensure dashboard groups display one per row and use full width */
+
+.groups-list .group-list-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.groups-list .group-left {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  /* allow left content to shrink to avoid overflow */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.groups-list .group-left .group-avatar { width:56px; height:56px; border-radius:12px; object-fit:cover; display:block; flex: 0 0 auto }
+.groups-list .group-left .group-icon { width:56px; height:56px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:20px; color: #fff; flex: 0 0 auto }
+.groups-list .group-title { margin:0; font-size:18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.groups-list .group-right { text-align: right; /* use a fixed flex basis instead of large min-width */ flex: 0 0 110px; min-width: 90px }
+.groups-list .group-balance { font-weight:900; font-size:18px; }
+
+/* Tweak stats to look like cards with subtle icon on top-right */
+.stat-card{ position: relative; overflow: visible }
+.stat-card::after { content: ''; position: absolute; right: 14px; top: 14px; width: 28px; height: 28px; background: rgba(10,20,30,0.04); border-radius:8px }
+
+.panel { border-radius:14px; padding: 0; }
+.panel-header{ display:flex; justify-content:space-between; align-items:center; padding: 16px 18px; border-bottom:1px solid rgba(10,20,30,0.03) }
+.panel-actions{ display:flex; gap:10px }
+.panel .section-title{ margin:0 }
+
+/* make use of free side space with wider columns */
+.dashboard-body { display: grid; grid-template-columns: 2.5fr 1fr; gap: 26px; align-items: start }
+
+@media (max-width: 1200px) {
+  .dashboard-body { grid-template-columns: 2fr 1fr }
+}
+
+/* button icon style */
+.btn-icon { display:inline-flex; align-items:center; gap:8px }
+.btn-icon .icon { font-size:18px }
+
+/* sticky header inside groups panel */
+.groups-panel .panel-header { position: sticky; top: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96)); backdrop-filter: blur(4px); z-index: 6 }
+
+
+/* Make layout collapse for small screens */
+@media (max-width: 960px) {
+  .dashboard-body { grid-template-columns: 1fr }
+}
+
+/* Stronger scoping to override other pages' .groups-list rules */
+.groups-column .groups-list { display:flex; flex-direction:column; gap:12px; padding:6px 0 }
+.groups-column .groups-list .group-list-item { width:100%; display:flex; justify-content:space-between; align-items:center }
+.groups-column .groups-list .group-left { display:flex; gap:12px; align-items:center }
+
+/* Strong enforcement: ensure Dashboard layout wins over any global .groups-list rules */
+.dashboard-page .groups-column .groups-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 6px 0 !important;
+}
+.dashboard-page .groups-column .groups-list .group-list-item {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 14px !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+}
+.dashboard-page .groups-column .groups-list .group-left {
+  display: flex !important;
+  gap: 14px !important;
+  align-items: center !important;
+}
+
+

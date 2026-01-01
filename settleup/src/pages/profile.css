@@ -1,0 +1,29 @@
+/* Modern profile page styles */
+.profile-page { padding: 28px; max-width: 980px; margin: 0 auto; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+.profile-card { background: #fff; border-radius: 12px; box-shadow: 0 6px 24px rgba(8,15,30,0.06); padding: 28px; }
+.profile-title { margin: 0 0 18px 0; font-size: 22px; }
+.profile-grid { display: grid; grid-template-columns: 1fr 260px; gap: 28px; align-items: start; }
+.profile-form .field-label { display:block; margin-top: 12px; margin-bottom:6px; font-weight:600; color:#333 }
+.input { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e9ef; background:#fafbfc; box-sizing:border-box; }
+.profile-actions { margin-top:14px; display:flex; gap:10px; }
+.btn { padding:8px 14px; border-radius:8px; border:none; cursor:pointer; background:#f3f4f6; color:#111; }
+.btn-ghost { background:#f3f4f6; }
+.btn-primary { background:#6b46ff; color:#fff; box-shadow: 0 6px 12px rgba(107,70,255,0.12); }
+.btn-danger { background:#ef4444; color:#fff; }
+.danger-zone { margin-top:22px; border-radius:8px; padding:14px; background: linear-gradient(180deg, rgba(255,235,238,0.6), rgba(255,243,244,0.4)); }
+.danger-text { color:#b91c1c; margin:8px 0 12px 0; }
+.profile-side .side-title { font-weight:600; margin-bottom:10px; }
+.avatar-preview { width: 220px; height:220px; border-radius:12px; background:#f5f7fb; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px dashed #e7eaf0; }
+.avatar-img { width:100%; height:100%; object-fit:cover; }
+.file-input { margin-top:10px; }
+
+/* Modal tweaks */
+.modal { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(2,6,23,0.45); z-index:200; }
+.modal-card { width:420px; background:#fff; border-radius:10px; box-shadow:0 20px 40px rgba(4,12,30,0.2); overflow:hidden; }
+.modal-header { padding:14px 18px; border-bottom:1px solid #f1f3f7; display:flex; justify-content:space-between; align-items:center; }
+.modal-body { padding:16px 18px; }
+.modal-actions { display:flex; gap:10px; margin-top:12px; }
+.modal-close { background:transparent; border:none; font-size:20px; cursor:pointer; }
+
+/* Responsive */
+@media (max-width:900px) { .profile-grid { grid-template-columns: 1fr; } .avatar-preview{ width:160px; height:160px } }

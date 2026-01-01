@@ -7,6 +7,8 @@ import groupRoutes from "./routes/groupRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import settlementRoutes from "./routes/settlementRoutes.js";
+import path from 'path';
+import fs from 'fs';
 
 
 
@@ -19,6 +21,11 @@ connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+app.use('/uploads', express.static(uploadsDir));
 
 
 // Routes

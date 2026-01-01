@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "./navbar.css";
@@ -28,6 +28,12 @@ function Navbar({ isLoggedIn, logoutHandler, user, setUser }) {
         setShowProfile(true);
         setIsOpen(false);
     };
+
+        useEffect(() => {
+            const handler = () => openProfile();
+            window.addEventListener('app/openProfile', handler);
+            return () => window.removeEventListener('app/openProfile', handler);
+        }, [user]);
 
     const handleProfileSave = async () => {
         if (!user) return;
@@ -141,6 +147,9 @@ function Navbar({ isLoggedIn, logoutHandler, user, setUser }) {
                                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                                     <button className="btn btn-primary" onClick={handleProfileSave} disabled={savingProfile}>{savingProfile ? 'Saving...' : 'Save'}</button>
                                     <button className="btn btn-ghost" onClick={() => setShowProfile(false)}>Cancel</button>
+                                </div>
+                                <div style={{ marginTop: 12 }}>
+                                    <button className="btn btn-danger" onClick={() => { setShowProfile(false); setShowLogoutConfirm(true); }}>Logout</button>
                                 </div>
                             </div>
                         </div>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { FiUsers, FiDollarSign, FiExternalLink, FiUserPlus } from "react-icons/fi";
 import "./groups.css";
 
 // TEMP: hardcoded user ID for debugging
@@ -68,15 +69,30 @@ const GroupsPage = () => {
 
         {groups.map((g) => (
           <div key={g._id} className="group-card">
-            <div className="group-card-left">
-              <h3>{g.groupName}</h3>
-              <p>{g.description}</p>
-            </div>
+            <div className="group-card-inner">
+              <div className="group-card-left" style={{display: 'flex', gap: 12, alignItems: 'center'}}>
+                { (g.avatarUrl || g.image || g.photo) ? (
+                  <img src={g.avatarUrl || g.image || g.photo} alt={g.groupName} className="group-avatar" onError={(e)=>{e.target.style.display='none'}} />
+                ) : (
+                  <div className="group-icon">{(g.groupName || 'G')[0]}</div>
+                )}
+                <div>
+                  <h3>{g.groupName}</h3>
+                  <p className="group-description">{g.description}</p>
+                </div>
+              </div>
 
-            <div className="group-card-right">
-              <Link to={`/groups/${g._id}`} className="btn outline">
-                Details
-              </Link>
+              <div className="group-footer">
+                <div className="group-stats">
+                  <span className="stat"><FiUsers /> {(g.members || []).length}</span>
+                  <span className="stat"><FiDollarSign /> {g.userBalance ? (g.userBalance > 0 ? `+₹${Number(g.userBalance).toFixed(2)}` : `-₹${Math.abs(Number(g.userBalance)).toFixed(2)}`) : '₹0.00'}</span>
+                </div>
+
+                <div className="card-actions" aria-hidden>
+                  <Link to={`/groups/${g._id}`} className="btn outline"><FiExternalLink /></Link>
+                  <button className="btn outline" onClick={() => navigate(`/groups/${g._id}`)}><FiUserPlus /></button>
+                </div>
+              </div>
             </div>
           </div>
         ))}

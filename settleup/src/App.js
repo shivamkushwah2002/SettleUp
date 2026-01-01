@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import Navbar from "./navbar/Navbar.js";
+import Sidebar from "./navbar/Sidebar";
 import ToastContainer from './components/ToastContainer';
 import LandingPage from "./landing_page/LandingPage.js";
 import Login from "./pages/Login.js";
@@ -11,6 +12,7 @@ import GroupsPage from "./pages/groups/GroupsPage.js";
 import CreateGroup from "./pages/groups/CreateGroup.js";
 import GroupDetails from "./pages/groups/GroupDetails.js";
 import JoinGroup from "./pages/groups/JoinGroup.js";
+import Profile from "./pages/Profile";
 
 
 
@@ -42,6 +44,7 @@ function App() {
 function PageWrapper({ isLoggedIn, setIsLoggedIn, user, setUser }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const logoutHandler = () => {
     localStorage.removeItem('user');
@@ -51,15 +54,11 @@ function PageWrapper({ isLoggedIn, setIsLoggedIn, user, setUser }) {
     navigate('/');
   };
 
-  // Hide Navbar on Login + Register pages
+  // Hide top Navbar on Login + Register pages
   const hideNavbar = location.pathname === "/login" || location.pathname === "/register";
 
-  return (
-    <>
-      {!hideNavbar && <Navbar isLoggedIn={isLoggedIn} logoutHandler={logoutHandler} user={user} setUser={setUser} />}
-      <ToastContainer />
-
-      <Routes>
+  const routes = (
+    <Routes>
         <Route
           path="/"
           element={isLoggedIn ? <Navigate to="/dashboard" /> : <LandingPage />}
@@ -97,10 +96,41 @@ function PageWrapper({ isLoggedIn, setIsLoggedIn, user, setUser }) {
         />
 
         <Route
+          path="/profile"
+          element={isLoggedIn ? <Profile user={user} setUser={setUser} logoutHandler={() => { localStorage.removeItem('user'); setUser(null); setIsLoggedIn(false); navigate('/'); }} /> : <Navigate to="/" />}
+        />
+
+        <Route
           path="/join/:inviteCode"
           element={isLoggedIn ? <JoinGroup /> : <Navigate to="/" />}
         />
-      </Routes>
+    </Routes>
+  );
+
+  return (
+    <>
+      {/* Show top Navbar only when NOT logged in and not on auth pages */}
+      {!isLoggedIn && !hideNavbar && <Navbar isLoggedIn={isLoggedIn} logoutHandler={logoutHandler} user={user} setUser={setUser} />}
+      <ToastContainer />
+
+      {isLoggedIn ? (
+        <div className="app-with-sidebar">
+          {/* Sidebar gets controlled open/close for mobile */}
+          <Sidebar logoutHandler={logoutHandler} user={user} setUser={setUser} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+          {/* mobile open button - visible only on small screens via CSS */}
+          <button className="mobile-sidebar-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">Menu</button>
+
+          {/* overlay shown when sidebar open on small screens */}
+          {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+
+          <main className="main-content">
+            {routes}
+          </main>
+        </div>
+      ) : (
+        routes
+      )}
     </>
   );
 }
