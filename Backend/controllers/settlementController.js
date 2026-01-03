@@ -3,6 +3,10 @@ import Settlement from "../models/settlementModel.js";
 import Group from "../models/Group.js";
 import { applySettlement } from "../utils/pairwiseHelper.js";
 
+/**
+ * Create a new settlement request.
+ * Sets status to 'pending'. Balances are NOT updated yet.
+ */
 export const createSettlement = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -26,6 +30,12 @@ export const createSettlement = async (req, res) => {
   }
 };
 
+/**
+ * Confirm a settlement.
+ * Action:
+ * 1. Updates status to 'confirmed'.
+ * 2. Calls `applySettlement` to update the actual debt graph and balances.
+ */
 export const confirmSettlement = async (req, res) => {
   try {
     const { settlementId } = req.params;
@@ -48,6 +58,10 @@ export const confirmSettlement = async (req, res) => {
   }
 };
 
+/**
+ * Reject a settlement request.
+ * Action: Updates status to 'rejected'. No financial impact.
+ */
 export const rejectSettlement = async (req, res) => {
   try {
     const { settlementId } = req.params;
@@ -65,6 +79,10 @@ export const rejectSettlement = async (req, res) => {
   }
 };
 
+/**
+ * Get all pending settlement requests where the user is the receiver.
+ * These appear in the dashboard for the user to Confirm/Reject.
+ */
 export const getPendingForUser = async (req, res) => {
   try {
     const { userId } = req.params;

@@ -1,6 +1,10 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
+/**
+ * Authenticate user and return user data.
+ * Note: Should ideally return a JWT token for stateless auth (future improvement).
+ */
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;

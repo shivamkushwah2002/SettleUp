@@ -15,6 +15,8 @@ import JoinGroup from "./pages/groups/JoinGroup.js";
 import Profile from "./pages/Profile";
 
 
+// Main App Component
+// Manages global authentication state (`user`, `isLoggedIn`) loaded from localStorage.
 function App() {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
@@ -25,8 +27,8 @@ function App() {
 
   return (
     <Router>
-      <PageWrapper 
-        isLoggedIn={isLoggedIn} 
+      <PageWrapper
+        isLoggedIn={isLoggedIn}
         setIsLoggedIn={setIsLoggedIn}
         user={user}
         setUser={setUser}
@@ -35,7 +37,13 @@ function App() {
   );
 }
 
-/* 🔥 Wrapper controls navbar visibility + routes */
+/**
+ * Wrapper for routing logic.
+ * Handles:
+ * 1. Navbar visibility (hidden on auth pages).
+ * 2. Protected Routes (redirect to / if not logged in).
+ * 3. Sidebar toggle for mobile view.
+ */
 function PageWrapper({ isLoggedIn, setIsLoggedIn, user, setUser }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,51 +62,51 @@ function PageWrapper({ isLoggedIn, setIsLoggedIn, user, setUser }) {
 
   const routes = (
     <Routes>
-        <Route
-          path="/"
-          element={isLoggedIn ? <Navigate to="/dashboard" /> : <LandingPage />}
-        />
+      <Route
+        path="/"
+        element={isLoggedIn ? <Navigate to="/dashboard" /> : <LandingPage />}
+      />
 
-        <Route 
-          path="/login" 
-          element={<Login setIsLoggedIn={setIsLoggedIn} setUser={setUser} />} 
-        />
+      <Route
+        path="/login"
+        element={<Login setIsLoggedIn={setIsLoggedIn} setUser={setUser} />}
+      />
 
-        <Route 
-          path="/register" 
-          element={<Register />} 
-        />
+      <Route
+        path="/register"
+        element={<Register />}
+      />
 
-        {/* Protected routes: redirect to landing page when not logged in */}
-        <Route
-          path="/dashboard"
-          element={isLoggedIn ? <Dashboard user={user} /> : <Navigate to="/" />}
-        />
+      {/* Protected routes: redirect to landing page when not logged in */}
+      <Route
+        path="/dashboard"
+        element={isLoggedIn ? <Dashboard user={user} /> : <Navigate to="/" />}
+      />
 
-        <Route
-          path="/groups"
-          element={isLoggedIn ? <GroupsPage /> : <Navigate to="/" />}
-        />
+      <Route
+        path="/groups"
+        element={isLoggedIn ? <GroupsPage /> : <Navigate to="/" />}
+      />
 
-        <Route
-          path="/groups/create"
-          element={isLoggedIn ? <CreateGroup /> : <Navigate to="/" />}
-        />
+      <Route
+        path="/groups/create"
+        element={isLoggedIn ? <CreateGroup user={user} /> : <Navigate to="/" />}
+      />
 
-        <Route
-          path="/groups/:groupId"
-          element={isLoggedIn ? <GroupDetails /> : <Navigate to="/" />}
-        />
+      <Route
+        path="/groups/:groupId"
+        element={isLoggedIn ? <GroupDetails /> : <Navigate to="/" />}
+      />
 
-        <Route
-          path="/profile"
-          element={isLoggedIn ? <Profile user={user} setUser={setUser} logoutHandler={() => { localStorage.removeItem('user'); setUser(null); setIsLoggedIn(false); navigate('/'); }} /> : <Navigate to="/" />}
-        />
+      <Route
+        path="/profile"
+        element={isLoggedIn ? <Profile user={user} setUser={setUser} logoutHandler={() => { localStorage.removeItem('user'); setUser(null); setIsLoggedIn(false); navigate('/'); }} /> : <Navigate to="/" />}
+      />
 
-        <Route
-          path="/join/:inviteCode"
-          element={isLoggedIn ? <JoinGroup /> : <Navigate to="/" />}
-        />
+      <Route
+        path="/join/:inviteCode"
+        element={isLoggedIn ? <JoinGroup /> : <Navigate to="/" />}
+      />
     </Routes>
   );
 

@@ -2,19 +2,56 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { FiPlus } from "react-icons/fi";
+import { Line, Doughnut } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import "./style/Dashboard.css";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  // Dashboard Data
   const [user, setUser] = useState(null);
   const [groups, setGroups] = useState([]);
-  const [recent, setRecent] = useState([]);
-  const [totalBalance, setTotalBalance] = useState(0);
-  const [totalExpensesSum, setTotalExpensesSum] = useState(0);
+  const [recent, setRecent] = useState([]); // Recent activity items
+
+  // Aggregate Stats
+  const [totalBalance, setTotalBalance] = useState(0); // Net balance (positive = owed, negative = owe)
+  const [totalExpensesSum, setTotalExpensesSum] = useState(0); // Total expenses in current view
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Chart Data
+  const [analytics, setAnalytics] = useState(null);
+  const [period, setPeriod] = useState("monthly"); // Toggle: "daily" or "monthly"
+
+  // Main Data Fetcher
+  // 1. Get User Profile
+  // 2. Get User's Groups
+  // 3. For each group, parallel fetch: Expenses & Balances
+  // 4. Calculate dashboard totals (Your net balance across all groups)
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) {
@@ -51,7 +88,7 @@ export default function Dashboard() {
 
               groupCopy.totalExpenses = totalExpenses;
               groupCopy.userBalance = userBal;
-              groupCopy._latestExpense = exList.length ? exList.sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt))[0] : null;
+              groupCopy._latestExpense = exList.length ? exList.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))[0] : null;
             } catch (err) {
               groupCopy.totalExpenses = 0;
               groupCopy.userBalance = 0;
@@ -74,8 +111,8 @@ export default function Dashboard() {
         const recentResults = enhanced
           .map(g => ({ group: g, expense: g._latestExpense }))
           .filter(r => r.expense)
-          .sort((a,b) => new Date(b.expense.createdAt) - new Date(a.expense.createdAt))
-          .slice(0,4);
+          .sort((a, b) => new Date(b.expense.date || b.expense.createdAt) - new Date(a.expense.date || a.expense.createdAt))
+          .slice(0, 4);
 
         setRecent(recentResults);
       } catch (err) {
@@ -88,6 +125,27 @@ export default function Dashboard() {
 
     fetchData();
   }, [navigate]);
+
+  // Fetch analytics when period changes (separate from main dashboard data)
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) return;
+
+    const fetchAnalytics = async () => {
+      try {
+        const analyticsRes = await axios.get(
+          `http://localhost:5000/api/expenses/analytics/${storedUser._id}?period=${period}`
+        );
+        if (analyticsRes.data.success) {
+          setAnalytics(analyticsRes.data.data);
+        }
+      } catch (err) {
+        console.error("Analytics fetch error:", err);
+      }
+    };
+
+    fetchAnalytics();
+  }, [period]);
 
   // helper: create a stable gradient from a string (group name)
   const stringToGradient = (str) => {
@@ -109,6 +167,12 @@ export default function Dashboard() {
           <h1 className="dashboard-title">Dashboard</h1>
           <div className="small-muted">Manage your shared expenses</div>
         </div>
+        {user && (
+          <div style={{ textAlign: 'right' }}>
+            <h3 style={{ margin: 0, fontSize: '18px' }}>{user.name}</h3>
+            <div className="small-muted">{user.email}</div>
+          </div>
+        )}
       </div>
 
       <div className="stats-panel card">
@@ -133,6 +197,137 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Charts Section */}
+      {analytics && analytics.dateData && analytics.dateData.length > 0 && (
+        <div className="charts-section">
+          <div className="chart-panel card">
+            <div className="panel-header">
+              <h3 className="section-title">Expense Trends</h3>
+              <div className="period-toggle">
+                <button
+                  className={`period-btn ${period === "daily" ? "active" : ""}`}
+                  onClick={() => setPeriod("daily")}
+                >
+                  Daily
+                </button>
+                <button
+                  className={`period-btn ${period === "monthly" ? "active" : ""}`}
+                  onClick={() => setPeriod("monthly")}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
+            <div className="chart-container">
+              <Line
+                data={{
+                  labels: analytics.dateData.map((item) => {
+                    if (period === "daily") {
+                      return new Date(item.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    } else {
+                      return new Date(item.date + "-01").toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      });
+                    }
+                  }),
+                  datasets: [
+                    {
+                      label: "Expenses",
+                      data: analytics.dateData.map((item) => item.amount),
+                      borderColor: "rgb(59, 130, 246)",
+                      backgroundColor: "rgba(59, 130, 246, 0.1)",
+                      tension: 0.4,
+                      fill: true,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          return `₹${context.parsed.y.toFixed(2)}`;
+                        },
+                      },
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        callback: function (value) {
+                          return "₹" + value.toFixed(0);
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="chart-panel card">
+            <div className="panel-header">
+              <h3 className="section-title">Expenses by Category</h3>
+            </div>
+            <div className="chart-container">
+              <Doughnut
+                data={{
+                  labels: analytics.categoryData.map((item) => item.category),
+                  datasets: [
+                    {
+                      data: analytics.categoryData.map((item) => item.amount),
+                      backgroundColor: [
+                        "rgba(59, 130, 246, 0.8)",
+                        "rgba(16, 185, 129, 0.8)",
+                        "rgba(245, 158, 11, 0.8)",
+                        "rgba(239, 68, 68, 0.8)",
+                        "rgba(139, 92, 246, 0.8)",
+                        "rgba(236, 72, 153, 0.8)",
+                        "rgba(20, 184, 166, 0.8)",
+                        "rgba(251, 146, 60, 0.8)",
+                        "rgba(107, 114, 128, 0.8)",
+                      ],
+                      borderWidth: 2,
+                      borderColor: "#fff",
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "right",
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          const label = context.label || "";
+                          const value = context.parsed || 0;
+                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                          const percentage = ((value / total) * 100).toFixed(1);
+                          return `${label}: ₹${value.toFixed(2)} (${percentage}%)`;
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="dashboard-body">
         <div className="groups-column">
           <div className="panel card groups-panel">
@@ -152,15 +347,15 @@ export default function Dashboard() {
               {groups.map((g) => (
                 <div key={g._id} className="group-list-item card">
                   <div className="group-left">
-                      { /* Avatar: use image if available, otherwise colored initial */ }
-                      {g.avatarUrl || g.image || g.photo ? (
-                        <img src={g.avatarUrl || g.image || g.photo} alt={g.groupName} className="group-avatar" onError={(e)=>{e.target.style.display='none'}} />
-                      ) : (
-                        <div className="group-icon" aria-hidden style={{ background: stringToGradient(g.groupName || 'G') }}>{(g.groupName || 'G')[0]}</div>
-                      )}
+                    { /* Avatar: use image if available, otherwise colored initial */}
+                    {g.avatarUrl || g.image || g.photo ? (
+                      <img src={g.avatarUrl || g.image || g.photo} alt={g.groupName} className="group-avatar" onError={(e) => { e.target.style.display = 'none' }} />
+                    ) : (
+                      <div className="group-icon" aria-hidden style={{ background: stringToGradient(g.groupName || 'G') }}>{(g.groupName || 'G')[0]}</div>
+                    )}
                     <div>
                       <h4 className="group-title">{g.groupName}</h4>
-                      <div className="small-muted">{(g.members || []).length} members • {g._latestExpense ? `Last activity ${new Date(g._latestExpense.createdAt).toLocaleString()}` : 'No recent activity'}</div>
+                      <div className="small-muted">{(g.members || []).length} members • {g._latestExpense ? `Last activity ${new Date(g._latestExpense.date || g._latestExpense.createdAt).toLocaleString()}` : 'No recent activity'}</div>
                     </div>
                   </div>
 
@@ -226,7 +421,7 @@ export default function Dashboard() {
                       <div className="activity-avatar">{(actor || 'S')[0]}</div>
                       <div>
                         <div className="activity-text"><strong>{actor}</strong> {description} <span className="activity-group">to {r.group.groupName}</span></div>
-                        <div className="small-muted">{new Date(exp.createdAt || Date.now()).toLocaleString()}</div>
+                        <div className="small-muted">{new Date(exp.date || exp.createdAt || Date.now()).toLocaleString()}</div>
                       </div>
                     </div>
                     <div className={`activity-amount ${amount >= 0 ? 'positive' : 'negative'}`}>{amountText}</div>

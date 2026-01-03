@@ -7,10 +7,17 @@ import path from 'path';
 import fs from 'fs';
 
 const router = express.Router();
+// Auth Routes
+// Base Path: /api/auth
+
 router.get("/test-auth", (req, res) => {
   res.send("Auth routes are loaded");
 });
+
+// POST /register - Register a new user
 router.post("/register", registerUser);
+
+// POST /login - Login user
 router.post("/login", loginUser);
 
 // Multer setup for profile image uploads
@@ -20,7 +27,7 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, uploadsDir); },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    const name = `${Date.now()}-${Math.random().toString(36).slice(2,8)}${ext}`;
+    const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
     cb(null, name);
   }
 });

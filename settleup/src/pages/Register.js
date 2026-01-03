@@ -11,8 +11,8 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
-    contact: "",
-    profileImage: ""
+    contact: ""
+    
   });
 
   const [error, setError] = useState("");
@@ -77,7 +77,7 @@ export default function Register() {
 
           <input name="contact" className="auth-input" placeholder="Contact Number" onChange={handleChange} />
 
-          <input name="profileImage" className="auth-input" placeholder="Profile Image URL (optional)" onChange={handleChange} />
+          
 
           <button className="auth-button" type="submit">Register</button>
         </form>

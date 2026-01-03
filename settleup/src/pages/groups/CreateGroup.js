@@ -5,10 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./groups.css";
 
-// TEMP: Hardcoded creator user ID for debugging
-const user = JSON.parse(localStorage.getItem("user"));
-
-const CreateGroup = () => {
+const CreateGroup = ({ user }) => {
   const navigate = useNavigate();
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
@@ -70,9 +67,9 @@ const CreateGroup = () => {
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className="btn primary">
           {loading ? "Creating..." : "Create Group"}
-        </button>
+        </button> &nbsp;
 
         <button
           type="button"

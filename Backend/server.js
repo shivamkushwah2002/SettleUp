@@ -29,17 +29,12 @@ app.use('/uploads', express.static(uploadsDir));
 
 
 // Routes
-app.use("/api/auth", authRoutes);
-
-// Group routes
-app.use("/api/groups", groupRoutes);
-
-app.use("/api/users", userRoutes);
-
-app.use("/api/expenses", expenseRoutes);
-
-
-app.use("/api/settle", settlementRoutes);
+// API Routes Mounting
+app.use("/api/auth", authRoutes); // Auth & User Profile
+app.use("/api/groups", groupRoutes); // Group Management
+app.use("/api/users", userRoutes); // User Search
+app.use("/api/expenses", expenseRoutes); // Expense Management
+app.use("/api/settle", settlementRoutes); // Settlement Logic
 
 // Start the server
 app.listen(process.env.PORT, () => {

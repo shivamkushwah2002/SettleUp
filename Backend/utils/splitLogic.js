@@ -1,3 +1,16 @@
+/**
+ * Core Logic for Splitting Expenses.
+ * This pure function takes the expense details and calculates exactly how much each person owes.
+ * 
+ * @param {object} params
+ * @param {number} params.amount - Total amount of expense
+ * @param {Array} params.members - Array of all group member IDs
+ * @param {string} params.paidBy - ID of the person who paid
+ * @param {string} params.splitType - 'equal', 'exact', or 'between'
+ * @param {object} [params.exactValues] - Map of {userId: amount} for 'exact' split
+ * @param {Array} [params.selectedMembers] - Array of userIds for 'between' split
+ * @returns {object} { paidBy, splits: [{ userId, owed }] }
+ */
 export function splitExpense({
   amount,
   members,
@@ -10,10 +23,11 @@ export function splitExpense({
   if (!members || members.length === 0) throw new Error("No members found");
   if (!paidBy) throw new Error("paidBy is required");
 
-  // Normalize all IDs to strings
+  // Normalize all IDs to strings for consistent comparison
   members = members.map(m => m.toString());
   const splits = [];
 
+  // 1. Equal Split: Divide total amount equally among ALL group members
   if (splitType === "equal") {
     const share = Number((amount / members.length).toFixed(2));
 
@@ -25,6 +39,8 @@ export function splitExpense({
     });
   }
 
+  // 2. Exact Split: User specifies exactly how much each person owes
+  // We must verify that the sum of these amounts equals the total expense.
   else if (splitType === "exact") {
     let totalExact = 0;
 
@@ -38,11 +54,13 @@ export function splitExpense({
       });
     });
 
+    // Validation: Floating point comparison with 2 decimals
     if (Number(totalExact.toFixed(2)) !== Number(amount)) {
       throw new Error("Exact split values must equal total amount");
     }
   }
 
+  // 3. Split Between: Divide total amount equally among a SELECTED SUBSET of members
   else if (splitType === "between") {
     if (!selectedMembers || selectedMembers.length === 0) {
       throw new Error("Select at least one member");
@@ -54,6 +72,7 @@ export function splitExpense({
     members.forEach(m => {
       splits.push({
         userId: m,
+        // Only selected members owe money; others owe 0
         owed: selectedMembers.includes(m) ? share : 0
       });
     });

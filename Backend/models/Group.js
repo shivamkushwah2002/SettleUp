@@ -5,13 +5,25 @@ const { Schema, model, Types } = mongoose;
 const PairwiseSchema = new Schema({}, { strict: false, _id: false }); // flexible nested object
 
 const GroupSchema = new Schema({
+  // Basic Info
   groupName: { type: String, required: true },
   description: { type: String, default: "" },
+
+  // Relations
   createdBy: { type: Types.ObjectId, ref: "User", required: true },
   members: [{ type: Types.ObjectId, ref: "User" }],
-  // pairwise debts: object where keys are debtor userId strings, values are objects mapping creditorId->amount (number)
+
+  // Debt Graph:
+  // Pairwise stores the graph edge weights.
+  // Keys: Debtor ID (string)
+  // Values: Object { Creditor ID (string) : Amount (Number) }
+  // Example: "UserA": { "UserB": 100 } means UserA owes UserB 100.
   pairwise: { type: Map, of: PairwiseSchema, default: {} },
-  // optional cached sums for quick reads (derived from pairwise)
+
+  // Balances:
+  // Derived from pairwise graph for quick lookup.
+  // Positive = User is owed money.
+  // Negative = User owes money.
   balances: { type: Map, of: Number, default: {} },
 
 }, { timestamps: true });

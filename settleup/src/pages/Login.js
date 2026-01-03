@@ -37,13 +37,16 @@ export default function Login({ setIsLoggedIn, setUser }) {
         form
       );
 
+      // Login Success
       const user = res.data.user;
       localStorage.setItem("user", JSON.stringify(user));
 
       if (setIsLoggedIn) setIsLoggedIn(true);
       if (setUser) setUser(user);
 
-      // Read pending invite AFTER login
+      // Deep Link Handler:
+      // If user came via an invite link (but wasn't logged in), we saved the code in localStorage.
+      // Now that they are logged in, we auto-join them to the group.
       const pendingInvite = localStorage.getItem("pendingInvite");
 
       if (pendingInvite) {

@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import Group from "../models/Group.js";
 import Expense from "../models/Expense.js";
 
+/**
+ * Create a new group.
+ * Initializes the group with the creator as the first member.
+ */
 export const createGroup = async (req, res) => {
   try {
     const { groupName, description = "", createdBy } = req.body;
@@ -36,6 +40,10 @@ export const createGroup = async (req, res) => {
 };
 
 
+/**
+ * Get details of a specific group.
+ * Populates relationships for members and createdBy to show names/emails.
+ */
 export const getGroupDetails = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -71,6 +79,10 @@ export const getGroupDetails = async (req, res) => {
   }
 };
 
+/**
+ * Get all groups a user belongs to.
+ * Used to populate the dashboard sidebar or main list.
+ */
 export const getUserGroups = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -97,12 +109,11 @@ export const getUserGroups = async (req, res) => {
       .populate("createdBy", "name email")
       .select("_id groupName description createdBy members createdAt updatedAt");
 
-    console.log("getUserGroups: userId=", userId, "candidateIds=", candidateIds, "foundCount=", groups.length);
 
     if (!groups || groups.length === 0) {
       try {
         const sample = await Group.findOne().select('members').lean();
-        console.log('Sample group members for debug:', sample?.members);
+        ('Sample group members for debug:', sample?.members);
       } catch (dbgErr) {
         console.log('Error fetching sample group for debug:', dbgErr);
       }
@@ -121,6 +132,11 @@ export const getUserGroups = async (req, res) => {
   }
 };
 
+/**
+ * Add a member to the group.
+ * Permission: Only Group Admin (creator).
+ * Checks if user is already a member before adding.
+ */
 export const addMember = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -156,6 +172,11 @@ export const addMember = async (req, res) => {
   }
 };
 
+/**
+ * Remove a member from the group.
+ * Permission: Only Group Admin.
+ * Admin cannot remove themselves (must delete group or transfer ownership - logic for transfer not implemented yet).
+ */
 export const removeMember = async (req, res) => {
   try {
     const { groupId, userId } = req.params; // userId to remove
@@ -198,6 +219,10 @@ export const removeMember = async (req, res) => {
   }
 };
 
+/**
+ * Update group details (Name, Description).
+ * Permission: Only Group Admin.
+ */
 export const updateGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -232,6 +257,11 @@ export const updateGroup = async (req, res) => {
 };
 
 
+/**
+ * Get cached group balances.
+ * This reads the pre-calculated balance map from the group document.
+ * Crucial for fast loading of the dashboard without re-computing everything.
+ */
 export const getGroupBalances = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -243,7 +273,7 @@ export const getGroupBalances = async (req, res) => {
 
     // Get balances from the Group's pairwise data
     const balances = group.balances || {};
-    
+
     // Convert Map to object if needed
     const balancesObj = balances instanceof Map ? Object.fromEntries(balances) : balances;
 
@@ -258,52 +288,3 @@ export const getGroupBalances = async (req, res) => {
   }
 };
 
-export const joinGroupByCode = async (req, res) => {
-  try {
-    const { inviteCode, userId } = req.body;
-
-    if (!inviteCode || !userId) {
-      return res.status(400).json({
-        success: false,
-        message: "Invite code and user ID required"
-      });
-    }
-
-    // For now, treat inviteCode as groupId
-    // In production, implement actual invite code generation/validation
-    const group = await Group.findById(inviteCode);
-    
-    if (!group) {
-      return res.status(404).json({
-        success: false,
-        message: "Invalid or expired invite code"
-      });
-    }
-
-    // Check if user already in group
-    if (group.members.includes(userId)) {
-      return res.json({
-        success: true,
-        message: "User already in group",
-        data: group
-      });
-    }
-
-    // Add user to group
-    group.members.push(userId);
-    await group.save();
-
-    return res.json({
-      success: true,
-      message: "Successfully joined group",
-      data: group
-    });
-
-  } catch (err) {
-    console.error("joinGroupByCode error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Server error joining group"
-    });
-  }
-};

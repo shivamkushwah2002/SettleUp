@@ -1,6 +1,15 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
+/**
+ * Register a new user.
+ * Validations:
+ * - Email format
+ * - Password (complexity requirement)
+ * - Confirm Password matching
+ * - Contact number correctness
+ * Encrypts password using bcrypt before saving.
+ */
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, confirmPassword, contact, profileImage } = req.body;
@@ -9,7 +18,7 @@ export const registerUser = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const contactRegex = /^[6-9]\d{9}$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
-;
+      ;
 
     // Validation
     if (!name.trim()) return res.status(400).json({ msg: "Name is required" });

@@ -5,14 +5,14 @@ const userSchema = new mongoose.Schema({
 
   email: { type: String, required: true, unique: true },
 
-  password: { type: String, required: true },
+  password: { type: String, required: true }, // Hashed password
 
-  contact: { type: String, required: true },   // phone number
+  contact: { type: String, required: true },   // Phone number (used for search/invites)
 
-  profileImage: { type: String, default: "" }  // optional image URL
+  profileImage: { type: String, default: "" }  // Optional image URL
 },
-{
-  timestamps: true // adds createdAt + updatedAt automatically
-});
+  {
+    timestamps: true // adds createdAt + updatedAt automatically
+  });
 
 export default mongoose.model("User", userSchema);

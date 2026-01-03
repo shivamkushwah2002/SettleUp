@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 
 // Helper: recursively convert Map (or Mongoose Map/doc) -> plain object
 // Adds cycle protection to avoid maximum call stack errors on unexpected circular refs.
+// This is critical because our graph structure can have circular references if not handled carefully during serialization.
 function deepMapToObject(value, visited = new WeakSet()) {
   // primitives
   if (value === null || value === undefined) return value;
@@ -50,6 +51,7 @@ function deepMapToObject(value, visited = new WeakSet()) {
 }
 
 // Ensure all keys (top-level and nested) are strings and nested values are numbers
+// This sanitizes the pairwise object to ensure MongoDB Compatibility and consistent math operations.
 function normalizePairwiseKeys(obj) {
   const out = {};
   for (const k of Object.keys(obj || {})) {
@@ -203,9 +205,9 @@ export async function applySettlement(groupId, payerId, receiverId, amount) {
     // If payerOwesReceiver < a, set pairwise[p][r]=0 and increase pairwise[r][p] by (a - payerOwesReceiver) negative meaning reverse debt
     pairwise[p][r] = 0;
     const remaining = a - payerOwesReceiver;
-    // remaining means receiver should owe payer now (receiver negative), so we reduce pairwise[r][p] by remaining:
-    pairwise[r][p] = Math.max(0, Number(pairwise[r][p] || 0) - remaining);
-    // If pairwise[r][p] was smaller than remaining, then this will set to 0; if any leftover, it becomes reversed direction - but we keep non-negative invariants.
+    // remaining means receiver should owe payer now, so we ADD to pairwise[r][p]
+    pairwise[r][p] = (Number(pairwise[r][p] || 0) + remaining);
+    // pairwise[r][p] represents amount Receiver Owes Payer. Since Payer paid extra, Receiver owes more.
     // Another approach is to allow negative values; I prefer to keep pairwise entries non-negative and represent net direction by which key has positive value.
     // If you want netting to always keep only one direction positive, run `normalizePairwise` after updates.
   }
@@ -219,6 +221,63 @@ export async function applySettlement(groupId, payerId, receiverId, amount) {
   g.pairwise = new Map(Object.entries(pairwise));
   const balancesObj = computeBalancesFromPairwise(pairwise);
   // Convert to Map for MongoDB
+  g.balances = new Map(Object.entries(balancesObj));
+  await g.save();
+  return g;
+}
+
+// Revert an expense (undo its effect)
+export async function revertExpenseFromPairwise(groupId, paidBy, splits) {
+  const g = await Group.findById(groupId);
+  if (!g) throw new Error("Group not found");
+
+  let pairwise = g.pairwise ? deepMapToObject(g.pairwise) : {};
+  pairwise = normalizePairwiseKeys(pairwise);
+  const paidById = paidBy.toString();
+
+  if (!pairwise[paidById]) pairwise[paidById] = {};
+
+  for (const s of splits) {
+    const uid = s.userId.toString();
+    const owed = Number(s.owed || 0);
+
+    // Previously we did: pairwise[uid][paidById] += owed
+    // Now we subtract:
+    if (!pairwise[uid]) pairwise[uid] = {};
+    if (uid === paidById) continue;
+
+    pairwise[uid][paidById] = (Number(pairwise[uid][paidById] || 0) - owed);
+
+    // If it becomes negative, it means we subtracted more than was seemingly there (floating point issues?), reset to 0 or handle logic. 
+    // Ideally it just goes back to what it was.
+    // However, since we normalized before, the debt might be on the other side now?
+    // Actually `applyExpenseToPairwise` simply adds to pairwise[uid][paidById]. 
+    // But `normalizePairwise` might have flipped it.
+    // To safely revert, it's best to apply the NEGATIVE amount using the standard logic? 
+    // Or just subtract here and THEN normalize.
+
+    // Attempt subtract directly:
+    // If pairwise[uid][paidById] becomes negative, say -10. 
+    // It means `uid` owed `paidById` 10 less effectively.
+    // -10 here implies `paidById` owes `uid` 10.
+    // So we can fix negative values by flipping direction.
+    if (pairwise[uid][paidById] < 0) {
+      const val = Math.abs(pairwise[uid][paidById]);
+      pairwise[uid][paidById] = 0;
+      if (!pairwise[paidById]) pairwise[paidById] = {};
+      pairwise[paidById][uid] = (Number(pairwise[paidById][uid] || 0) + val);
+    }
+  }
+
+  // After subtraction, re-normalize
+  for (const s of splits) {
+    const uid = s.userId.toString();
+    if (uid === paidById) continue;
+    normalizePairwise(pairwise, uid, paidById);
+  }
+
+  g.pairwise = new Map(Object.entries(pairwise));
+  const balancesObj = computeBalancesFromPairwise(pairwise);
   g.balances = new Map(Object.entries(balancesObj));
   await g.save();
   return g;
