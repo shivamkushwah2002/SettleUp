@@ -10,10 +10,7 @@ export default function Hero() {
           roommates, friends, and travel groups.
         </p>
 
-        <div className="hero-buttons">
-          <button className="btn btn-primary">Get Started</button>
-          <button className="btn btn-outline">Learn More</button>
-        </div>
+       
       </div>
     </section>
   );

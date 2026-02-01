@@ -18,7 +18,7 @@ export default function AboutSection() {
             To remove awkward money conversations and make splitting bills effortless,
             fair, and organized.
           </p>
-          <button className="btn btn-outline">Learn More</button>
+          
         </div>
       </div>
     </section>
