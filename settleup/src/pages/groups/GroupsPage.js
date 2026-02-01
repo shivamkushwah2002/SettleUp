@@ -33,7 +33,7 @@ const GroupsPage = () => {
       try {
 
         const res = await axios.get(
-          `http://localhost:5000/api/groups/user/${user._id}`
+          `${process.env.REACT_APP_FRONTEND_URL}/api/groups/user/${user._id}`
         );
 
         setGroups(res.data.data || []);
@@ -70,9 +70,9 @@ const GroupsPage = () => {
         {groups.map((g) => (
           <div key={g._id} className="group-card">
             <div className="group-card-inner">
-              <div className="group-card-left" style={{display: 'flex', gap: 12, alignItems: 'center'}}>
-                { (g.avatarUrl || g.image || g.photo) ? (
-                  <img src={g.avatarUrl || g.image || g.photo} alt={g.groupName} className="group-avatar" onError={(e)=>{e.target.style.display='none'}} />
+              <div className="group-card-left" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                {(g.avatarUrl || g.image || g.photo) ? (
+                  <img src={g.avatarUrl || g.image || g.photo} alt={g.groupName} className="group-avatar" onError={(e) => { e.target.style.display = 'none' }} />
                 ) : (
                   <div className="group-icon">{(g.groupName || 'G')[0]}</div>
                 )}

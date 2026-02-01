@@ -26,7 +26,7 @@ const CreateGroup = ({ user }) => {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/api/groups/create",
+        `${process.env.REACT_APP_FRONTEND_URL}/api/groups/create`,
         {
           groupName,
           description,

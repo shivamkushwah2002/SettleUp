@@ -60,7 +60,7 @@ export default function GroupDetails() {
 	// Fetch helpers
 	const fetchGroup = async () => {
 		try {
-			const res = await axios.get(`http://localhost:5000/api/groups/${groupId}`);
+			const res = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/groups/${groupId}`);
 			if (res.data.success) setGroup(res.data.data);
 		} catch (err) {
 			console.log("Error fetching group", err);
@@ -69,7 +69,7 @@ export default function GroupDetails() {
 
 	const fetchExpenses = async () => {
 		try {
-			const res = await axios.get(`http://localhost:5000/api/expenses/${groupId}`);
+			const res = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/expenses/${groupId}`);
 			if (res.data.success) setExpenses(res.data.data);
 		} catch (err) {
 			console.log("Expense fetch error:", err);
@@ -78,7 +78,7 @@ export default function GroupDetails() {
 
 	const fetchBalances = async () => {
 		try {
-			const res = await axios.get(`http://localhost:5000/api/groups/${groupId}/balances`);
+			const res = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/groups/${groupId}/balances`);
 			if (res.data.success) setBalances(res.data.data);
 		} catch (err) {
 			console.log("Balance fetch error:", err);
@@ -88,7 +88,7 @@ export default function GroupDetails() {
 	const fetchPendingSettlements = async () => {
 		try {
 			if (!user) return;
-			const res = await axios.get(`http://localhost:5000/api/settle/pending/${user._id}`);
+			const res = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/settle/pending/${user._id}`);
 			if (res.data.success) setPending(res.data.data || []);
 		} catch (err) {
 			console.log("Pending fetch error:", err);
@@ -122,7 +122,7 @@ export default function GroupDetails() {
 		}
 
 		try {
-			const res = await axios.get(`http://localhost:5000/api/users/search?query=${encodeURIComponent(q)}`);
+			const res = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/users/search?query=${encodeURIComponent(q)}`);
 			if (res.data && res.data.success) setUsers(res.data.data || []);
 			else setUsers([]);
 		} catch (err) {
@@ -139,7 +139,7 @@ export default function GroupDetails() {
 
 	const handleAddMember = async (userId) => {
 		try {
-			const res = await axios.post(`http://localhost:5000/api/groups/${groupId}/add-member?adminId=${user._id}`, { userId });
+			const res = await axios.post(`${process.env.REACT_APP_FRONTEND_URL}/api/groups/${groupId}/add-member?adminId=${user._id}`, { userId });
 			if (res.data.success) {
 				window.dispatchEvent(new CustomEvent('app/toast', { detail: { message: 'Member added!', type: 'success' } }));
 				setShowAddMember(false);
@@ -160,7 +160,7 @@ export default function GroupDetails() {
 	const handleRemoveMember = async (memberId) => {
 		if (!window.confirm('Remove this member from group?')) return;
 		try {
-			const res = await axios.delete(`http://localhost:5000/api/groups/${groupId}/remove-member/${memberId}?adminId=${user._id}`);
+			const res = await axios.delete(`${process.env.REACT_APP_FRONTEND_URL}/api/groups/${groupId}/remove-member/${memberId}?adminId=${user._id}`);
 			if (res.data.success) {
 				window.dispatchEvent(new CustomEvent('app/toast', { detail: { message: 'Member removed!', type: 'success' } }));
 				fetchGroup();
@@ -172,7 +172,7 @@ export default function GroupDetails() {
 
 	const handleConfirm = async (id) => {
 		try {
-			const res = await axios.post(`http://localhost:5000/api/settle/${id}/confirm`);
+			const res = await axios.post(`${process.env.REACT_APP_FRONTEND_URL}/api/settle/${id}/confirm`);
 			if (res.data.success) {
 				fetchPendingSettlements();
 				fetchBalances();
@@ -186,7 +186,7 @@ export default function GroupDetails() {
 
 	const handleReject = async (id) => {
 		try {
-			const res = await axios.post(`http://localhost:5000/api/settle/${id}/reject`);
+			const res = await axios.post(`${process.env.REACT_APP_FRONTEND_URL}/api/settle/${id}/reject`);
 			if (res.data.success) {
 				fetchPendingSettlements();
 				window.dispatchEvent(new CustomEvent('app/toast', { detail: { message: 'Rejected', type: 'info' } }));
@@ -199,7 +199,7 @@ export default function GroupDetails() {
 	const handleSettleUp = async () => {
 		if (!selectedReceiver || !settleAmount) return;
 		try {
-			const res = await axios.post(`http://localhost:5000/api/settle/${groupId}/create`, { payerId: user._id, receiverId: selectedReceiver, amount: Number(settleAmount) });
+			const res = await axios.post(`${process.env.REACT_APP_FRONTEND_URL}/api/settle/${groupId}/create`, { payerId: user._id, receiverId: selectedReceiver, amount: Number(settleAmount) });
 			if (res.data.success) {
 				window.dispatchEvent(new CustomEvent('app/toast', { detail: { message: 'Settle request sent', type: 'success' } }));
 				setShowSettleUp(false);
@@ -218,7 +218,7 @@ export default function GroupDetails() {
 		e.stopPropagation();
 		if (!window.confirm("Are you sure you want to delete this expense?")) return;
 		try {
-			const res = await axios.delete(`http://localhost:5000/api/expenses/${expenseId}`);
+			const res = await axios.delete(`${process.env.REACT_APP_FRONTEND_URL}/api/expenses/${expenseId}`);
 			if (res.data.success) {
 				window.dispatchEvent(new CustomEvent('app/toast', { detail: { message: 'Expense deleted', type: 'success' } }));
 				fetchExpenses();
@@ -292,9 +292,9 @@ export default function GroupDetails() {
 
 			let res;
 			if (editingExpenseId) {
-				res = await axios.put(`http://localhost:5000/api/expenses/${editingExpenseId}`, payload);
+				res = await axios.put(`${process.env.REACT_APP_FRONTEND_URL}/api/expenses/${editingExpenseId}`, payload);
 			} else {
-				res = await axios.post(`http://localhost:5000/api/expenses/${groupId}/add`, payload);
+				res = await axios.post(`${process.env.REACT_APP_FRONTEND_URL}/api/expenses/${groupId}/add`, payload);
 			}
 
 			if (res.data.success) {

@@ -63,10 +63,10 @@ export default function Dashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const resUser = await axios.get(`http://localhost:5000/api/auth/${storedUser._id}`);
+        const resUser = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/auth/${storedUser._id}`);
         setUser(resUser.data);
 
-        const resGroups = await axios.get(`http://localhost:5000/api/groups/user/${storedUser._id}`);
+        const resGroups = await axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/groups/user/${storedUser._id}`);
         const myGroups = resGroups.data.data || [];
 
         // For each group, fetch expenses and balances to compute totals and user balance
@@ -75,8 +75,8 @@ export default function Dashboard() {
             const groupCopy = { ...g };
             try {
               const [expRes, balRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/expenses/${g._id}`),
-                axios.get(`http://localhost:5000/api/groups/${g._id}/balances`),
+                axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/expenses/${g._id}`),
+                axios.get(`${process.env.REACT_APP_FRONTEND_URL}/api/groups/${g._id}/balances`),
               ]);
 
               const exList = expRes.data.data || [];
@@ -134,7 +134,7 @@ export default function Dashboard() {
     const fetchAnalytics = async () => {
       try {
         const analyticsRes = await axios.get(
-          `http://localhost:5000/api/expenses/analytics/${storedUser._id}?period=${period}`
+          `${process.env.REACT_APP_FRONTEND_URL}/api/expenses/analytics/${storedUser._id}?period=${period}`
         );
         if (analyticsRes.data.success) {
           setAnalytics(analyticsRes.data.data);

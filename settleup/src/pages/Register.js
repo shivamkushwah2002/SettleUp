@@ -12,7 +12,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     contact: ""
-    
+
   });
 
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ export default function Register() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const contactRegex = /^[6-9]\d{9}$/;
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
-;
+    ;
 
   const validate = () => {
     if (!form.name.trim()) return "Name is required";
@@ -46,7 +46,7 @@ export default function Register() {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", form);
+      const res = await axios.post(`${process.env.REACT_APP_FRONTEND_URL}/api/auth/register`, form);
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.msg || "Registration failed");
@@ -77,7 +77,7 @@ export default function Register() {
 
           <input name="contact" className="auth-input" placeholder="Contact Number" onChange={handleChange} />
 
-          
+
 
           <button className="auth-button" type="submit">Register</button>
         </form>

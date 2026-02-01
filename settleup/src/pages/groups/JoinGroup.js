@@ -16,8 +16,6 @@ const JoinGroup = () => {
         console.log("🔥 inviteCode from URL:", inviteCode);
         console.log("🔥 user from localStorage:", user);
 
-
-
         const handleJoin = async () => {
             if (!inviteCode) {
                 setError("Invalid invite link.");
@@ -35,7 +33,7 @@ const JoinGroup = () => {
             // User IS logged in → join the group directly
             try {
                 const res = await axios.post(
-                    "http://localhost:5000/api/groups/join-by-code",
+                    `${process.env.REACT_APP_FRONTEND_URL}/api/groups/join-by-code`,
                     { inviteCode, userId: user._id }
                 );
 

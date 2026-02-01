@@ -36,14 +36,14 @@ export default function Profile({ user, setUser, logoutHandler }) {
         fd.append('name', form.name);
         fd.append('contact', form.contact);
         fd.append('profileImage', imageFile);
-        const res = await axios.put(`http://localhost:5000/api/auth/${user._id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        const res = await axios.put(`${process.env.REACT_APP_FRONTEND_URL}/api/auth/${user._id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         const updated = res.data.user || res.data;
         localStorage.setItem('user', JSON.stringify(updated));
         setUser && setUser(updated);
         window.dispatchEvent(new CustomEvent('app/toast', { detail: { message: 'Profile updated', type: 'success' } }));
       } else {
         // plain JSON update
-        const res = await axios.put(`http://localhost:5000/api/auth/${user._id}`, { name: form.name, contact: form.contact });
+        const res = await axios.put(`${process.env.REACT_APP_FRONTEND_URL}/api/auth/${user._id}`, { name: form.name, contact: form.contact });
         const updated = res.data.user || res.data;
         localStorage.setItem('user', JSON.stringify(updated));
         setUser && setUser(updated);
@@ -65,7 +65,7 @@ export default function Profile({ user, setUser, logoutHandler }) {
     if (deleteToken !== 'DELETE') return;
     if (!user) return;
     try {
-      await axios.delete(`http://localhost:5000/api/auth/${user._id}`);
+      await axios.delete(`${process.env.REACT_APP_FRONTEND_URL}/api/auth/${user._id}`);
     } catch (err) {
       console.error('Delete error', err);
     }

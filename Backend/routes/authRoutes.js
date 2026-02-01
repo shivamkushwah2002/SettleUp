@@ -10,10 +10,6 @@ const router = express.Router();
 // Auth Routes
 // Base Path: /api/auth
 
-router.get("/test-auth", (req, res) => {
-  res.send("Auth routes are loaded");
-});
-
 // POST /register - Register a new user
 router.post("/register", registerUser);
 

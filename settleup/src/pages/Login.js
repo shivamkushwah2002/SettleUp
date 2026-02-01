@@ -30,10 +30,10 @@ export default function Login({ setIsLoggedIn, setUser }) {
       setError(validationError);
       return;
     }
-
+    
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${process.env.REACT_APP_FRONTEND_URL}/api/auth/login`,
         form
       );
 
@@ -43,28 +43,6 @@ export default function Login({ setIsLoggedIn, setUser }) {
 
       if (setIsLoggedIn) setIsLoggedIn(true);
       if (setUser) setUser(user);
-
-      // Deep Link Handler:
-      // If user came via an invite link (but wasn't logged in), we saved the code in localStorage.
-      // Now that they are logged in, we auto-join them to the group.
-      const pendingInvite = localStorage.getItem("pendingInvite");
-
-      if (pendingInvite) {
-        console.log("🔥 Found pendingInvite:", pendingInvite);
-
-        // Remove it so it does not repeat
-        localStorage.removeItem("pendingInvite");
-
-        // Auto join group
-        await axios.post("http://localhost:5000/api/groups/join-by-code", {
-          inviteCode: pendingInvite,
-          userId: user._id
-        });
-
-        console.log("🔥 Auto-joined group. Redirecting...");
-        navigate("/groups");
-        return;
-      }
 
       navigate("/dashboard");
 
